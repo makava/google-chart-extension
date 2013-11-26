@@ -24,13 +24,13 @@ function init() {
   // The array with the data. The second column is needed for
   // the "Hide/Show all" entry and the value of the data doesn''t matter, but 
   // it must be the same as the other data types:
-  arrayData = [ ['Year' , 'Hide all', 'Group1', 'Group2', 'Group3', 'Group4'],
-                ['2008' ,     0,         300,     1600  ,      0,     1200  ],
-                ['2009' ,     0,         900,     1200  ,      0,     1600  ],
-                ['2010' ,     0,        1670,     1060  ,    250,     1350  ],
-                ['2011' ,     0,        1350,      820  ,    800,     1000  ],
-                ['2012' ,     0,        1280,      600  ,   1200,      800  ],
-                ['2013' ,     0,        1030,      540  ,   1950,      350  ] ];
+  arrayData = [ ['Year' , 'Group1', 'Group2', 'Group3', 'Group4'],
+                ['2008' ,    300,     1600  ,      0,     1200  ],
+                ['2009' ,    900,     1200  ,      0,     1600  ],
+                ['2010' ,   1670,     1060  ,    250,     1350  ],
+                ['2011' ,   1350,      820  ,    800,     1000  ],
+                ['2012' ,   1280,      600  ,   1200,      800  ],
+                ['2013' ,   1030,      540  ,   1950,      350  ] ];
   drawChart();
 }
 
@@ -40,14 +40,19 @@ function init() {
  * See https://developers.google.com/chart/
  **/
 function drawChart() {
-    google.load("visualization", "1", {packages:["corechart"]});
+    google.load("visualization", "1", { packages:["corechart"] });
     google.setOnLoadCallback(drawChart);
-    
+
+    arrayData[0].splice(1, 0, 'Hide all');
+    for (i = 1; i <  arrayData.length; i++) {
+        arrayData[i].splice(1, 0, 0);
+    }
+
     var data  = google.visualization.arrayToDataTable(arrayData);
     var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
 
     // The default series which are displayed from the beginning:
-    defaultSeries = [  ];
+    defaultSeries = [ 1 ];
     
     var columns = [ ];
     var series  = { };
