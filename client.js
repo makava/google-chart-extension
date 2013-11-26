@@ -14,15 +14,16 @@
 var arrayData;
 var ws;
 var defaultSeries;
+var allHidden;
 
 /**
  * Function init()
  * Initialises array with data and calls the drawChart() function
  **/
 function init() {
-
   // The array with the data. The second column is needed for
-  // the "Hide/Show all" entry and the data must be left 0:
+  // the "Hide/Show all" entry and the value of the data doesn''t matter, but 
+  // it must be the same as the other data types:
   arrayData = [ ['Year' , 'Hide all', 'Group1', 'Group2', 'Group3', 'Group4'],
                 ['2008' ,     0,         300,     1600  ,      0,     1200  ],
                 ['2009' ,     0,         900,     1200  ,      0,     1600  ],
@@ -46,7 +47,7 @@ function drawChart() {
     var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
 
     // The default series which are displayed from the beginning:
-    defaultSeries = [1, 2, 3];
+    defaultSeries = [  ];
     
     var columns = [ ];
     var series  = { };
@@ -78,10 +79,37 @@ function drawChart() {
             }
         }
     }    
+
+    // Hide the "Hide all" series:
+    columns[1] = {
+        label: data.getColumnLabel(1),
+        type : data.getColumnType(1),
+        calc : function () {
+            return null;
+        }
+    };
+
+    // if no no series are displayed at the beginning set the show all option:
+    if(defaultSeries.length == 0) {   
+        allHidden = true;
+        columns[1].label = 'Show all';
+    }
+    // else if user only gave the 'hide all series as default':
+    else if( (defaultSeries.length == 1) && (defaultSeries[0] == 1) ) {
+        allHidden = true;
+        columns[1].label = 'Show all';
+        series[0].color = '#CCCCCC';
+    }
+    else {
+        allHidden = false;
+        series[0].color = null;
+    }
+
     var options = {
         title: 'Title goes here',
         backgroundColor: '#F4F4F6',
-        vAxis: {title: 'Label your axes!', maxValue: 2000, minValue: 0}, 
+        vAxis: {title: 'Score', maxValue: 2000, minValue: 0},
+        hAxis: {title: 'Year'}, 
         series: series
     };
 
@@ -100,53 +128,41 @@ function drawChart() {
             // if row is undefined, we clicked on the legend:
             if (typeof(sel[0].row) === 'undefined') {
                 var col = sel[0].column;
-                // if the entry is viewable, we hide it:
-                if (columns[col] == col) {
-                    // if col is 1, user pressed "Hide all":
-                    if(col == 1) {
-                        var c;
-                        // Hide all data-entrys:
-                        for(c = 2; c < columns.length; c++) {
-                            columns[c] = {
-                                label: data.getColumnLabel(c),
-                                type : data.getColumnType(c),
-                                calc : function () {
-                                    return null;
-                                }
-                            };
-                        }
-                        // Hide the "Hide all" entry:
-                        columns[col] = {
-                            label: data.getColumnLabel(col),
-                            type : data.getColumnType(col),
-                            calc : function () {
-                                return null;
-                            }
-                        }; 
-                        // Grey out the all legend entrys:
-                        for(s in series) {
-                            series[s].color  = '#CCCCCC';
-                            columns[1].label = 'Show all'
-                        }
-                    }
-                    // user klicked not on "Hide all" but on a single legend entry:
-                    else {
-                        // hide the data series:
-                        columns[col] = {
-                            label: data.getColumnLabel(col),
-                            type : data.getColumnType(col),
+                // If user clicked on "hide all":
+                if((col == 1) && (allHidden == false)){
+                    var c;
+                    // Hide all data-entrys:
+                    for(c = 2; c < columns.length; c++) {
+                        columns[c] = {
+                            label: data.getColumnLabel(c),
+                            type : data.getColumnType(c),
                             calc : function () {
                                 return null;
                             }
                         };
                     }
+                    // Grey out the all legend entrys:
+                    for(s in series) {
+                        series[s].color  = '#CCCCCC';
+                    }
+                    columns[1].label = 'Show all';
+                    allHidden = true;
+                }
+                // Else if user clicked on a single viewable legend entry:
+                else if (columns[col] == col) {
+                    // hide the data series:
+                    columns[col] = {
+                        label: data.getColumnLabel(col),
+                        type : data.getColumnType(col),
+                        calc : function () {
+                            return null;
+                        }
+                    };
                     // grey out the legend entry:
                     series[col - 1].color = '#CCCCCC';
                 }
                 // else entry is not viewable, so we display it:
                 else {
-                    // set the data series to displayable:  
-                    columns[col] = col;
                     // if user klicked "Hide all" when no entry where hidden:
                     if(col == 1) {
                         // display all legend entrys:
@@ -158,9 +174,12 @@ function drawChart() {
                                 columns[c] = c;
                             }
                         }
-                    }    
-                    // user clicked on single legend entry, display it:
+                        columns[1].label = 'Hide all';
+                        allHidden = false;
+                    }
+                    // user clicked on single hidden legend entry, display it:
                     else {
+                        columns[col] = col;
                         series[col - 1].color = null;
                     }
                 }
