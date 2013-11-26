@@ -21,9 +21,7 @@ var allHidden;
  * Initialises array with data and calls the drawChart() function
  **/
 function init() {
-  // The array with the data. The second column is needed for
-  // the "Hide/Show all" entry and the value of the data doesn''t matter, but 
-  // it must be the same as the other data types:
+  // The array with the data:
   arrayData = [ ['Year' , 'Group1', 'Group2', 'Group3', 'Group4'],
                 ['2008' ,    300,     1600  ,      0,     1200  ],
                 ['2009' ,    900,     1200  ,      0,     1600  ],
@@ -43,20 +41,28 @@ function drawChart() {
     google.load("visualization", "1", { packages:["corechart"] });
     google.setOnLoadCallback(drawChart);
 
+    // Add an "Hide all" series to the given data array:
     arrayData[0].splice(1, 0, 'Hide all');
-    for (i = 1; i <  arrayData.length; i++) {
+    for (var i = 1; i <  arrayData.length; i++) {
         arrayData[i].splice(1, 0, 0);
     }
 
     var data  = google.visualization.arrayToDataTable(arrayData);
     var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
 
-    // The default series which are displayed from the beginning:
-    defaultSeries = [ 1 ];
+    // The default series which are displayed from the beginning, it starts
+    // with index '2' for the first data entry, '0' and '1' have no effect:
+    defaultSeries = [ 2, /*3,*/ 4, 5 ];
     
+    // if there are 0's and 1's in the defaultSeries list remove them:
+    for (var i = 0; i < 1; i++) {
+        while(defaultSeries.indexOf(i) > -1) {
+            defaultSeries.splice(defaultSeries.indexOf(i), 1)
+        }
+    }
+
     var columns = [ ];
     var series  = { };
-
     for (var i = 0; i < data.getNumberOfColumns(); i++) {
         // if the column is the domain column or in the default list, display the series:
         if (i == 0 || defaultSeries.indexOf(i) > -1) {
@@ -94,16 +100,10 @@ function drawChart() {
         }
     };
 
-    // if no no series are displayed at the beginning set the show all option:
+    // if no default series is given at the beginning set the 'show all' option:
     if(defaultSeries.length == 0) {   
         allHidden = true;
         columns[1].label = 'Show all';
-    }
-    // else if user only gave the 'hide all series as default':
-    else if( (defaultSeries.length == 1) && (defaultSeries[0] == 1) ) {
-        allHidden = true;
-        columns[1].label = 'Show all';
-        series[0].color = '#CCCCCC';
     }
     else {
         allHidden = false;
