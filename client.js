@@ -15,6 +15,7 @@ var arrayData;
 var ws;
 var defaultSeries;
 var allHidden;
+var addedHideAllSeries;
 
 /**
  * Function init()
@@ -29,6 +30,8 @@ function init() {
                 ['2011' ,   1350,      820  ,    800,     1000  ],
                 ['2012' ,   1280,      600  ,   1200,      800  ],
                 ['2013' ,   1030,      540  ,   1950,      350  ] ];
+
+  addedHideAllSeries = false;
   drawChart();
 }
 
@@ -38,16 +41,16 @@ function init() {
  * See https://developers.google.com/chart/
  **/
 function drawChart() {
-    google.load("visualization", "1", { packages:["corechart"] });
-    google.setOnLoadCallback(drawChart);
-
-    // Add an "Hide all" series to the given data array:
-    arrayData[0].splice(1, 0, 'Hide all');
-    for (var i = 1; i <  arrayData.length; i++) {
-        arrayData[i].splice(1, 0, 0);
+    // Add an "Hide all" series to the given data array only once:
+    if(addedHideAllSeries == false) {
+        arrayData[0].splice(1, 0, 'Hide all');
+        for (var i = 1; i <  arrayData.length; i++) {
+            arrayData[i].splice(1, 0, 0);
+        }
+        addedHideAllSeries = true;
     }
 
-    var data  = google.visualization.arrayToDataTable(arrayData);
+    var data  = new google.visualization.arrayToDataTable(arrayData);
     var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
 
     // The default series which are displayed from the beginning, it starts
@@ -131,7 +134,7 @@ function drawChart() {
         // if selection length is 0, we selected an element:
         if (sel.length > 0) {
             // if row is undefined, we clicked on the legend:
-            if (typeof(sel[0].row) === 'undefined') {
+            if (sel[0].row == null) {
                 var col = sel[0].column;
                 // If user clicked on "hide all":
                 if((col == 1) && (allHidden == false)){
